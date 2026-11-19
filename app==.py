@@ -12,7 +12,7 @@ from sklearn.preprocessing import StandardScaler
 from xgboost import XGBClassifier
 
 from common import (COVER_NAMES, FEATURES, NUM_COLS, TARGET, WILD_NAMES,
-                    build_row, load_covtype)
+                    build_row, load_covtype, preprocess)
 
 st.set_page_config(page_title="Forest Cover Type", page_icon="🌲", layout="wide")
 
@@ -32,6 +32,12 @@ def get_model():
     m = XGBClassifier()
     m.load_model(MODEL_PATH)
     return m
+
+
+@st.cache_data
+def get_preprocess():
+    with open("preprocess.json") as f:
+        return json.load(f)
 
 
 @st.cache_data
@@ -143,6 +149,8 @@ with tab_pred:
 
         with right:
             x = build_row(vals, wild, soil)
+            # the model was trained on clipped + RobustScaler-scaled data, so do the same here
+            x = preprocess(x, get_preprocess())
             # match the column names the saved model was trained with (e.g. 0..53)
             model_cols = model.get_booster().feature_names
             if model_cols and list(x.columns) != list(model_cols):

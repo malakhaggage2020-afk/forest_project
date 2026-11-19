@@ -35,3 +35,12 @@ def build_row(num_values: dict, wilderness: int, soil: int) -> pd.DataFrame:
     row[f"Wilderness_Area{wilderness}"] = 1
     row[f"Soil_Type{soil}"] = 1
     return pd.DataFrame([row], columns=FEATURES)
+
+
+def preprocess(x: pd.DataFrame, params: dict) -> pd.DataFrame:
+    """Same steps as the notebook: clip numeric cols at the 1%/99% quantiles, then RobustScaler."""
+    x = x.copy().astype(float)
+    for col in NUM_COLS:
+        x[col] = x[col].clip(params["clip_lower"][col], params["clip_upper"][col])
+    out = (x.values - np.array(params["center"])) / np.array(params["scale"])
+    return pd.DataFrame(out, columns=x.columns)

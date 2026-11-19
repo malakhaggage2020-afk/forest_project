@@ -134,6 +134,10 @@ with tab_pred:
                 [i for i in range(1, 41) if r[f"Soil_Type{i}"] == 1][0])
             st.session_state["true_label"] = int(r[TARGET])
 
+        def clear_label():
+            # the actual label only applies to the untouched sample, so drop it once the user edits an input
+            st.session_state["true_label"] = None
+
         left, right = st.columns([3, 2])
         with left:
             st.button("🎲 Load a random real sample", on_click=load_random_row)
@@ -141,11 +145,11 @@ with tab_pred:
             vals = {}
             for i, c in enumerate(NUM_COLS):
                 lo, hi, _ = ranges[c]
-                vals[c] = cols[i % 2].slider(c, lo, hi, key=f"in_{c}")
+                vals[c] = cols[i % 2].slider(c, lo, hi, key=f"in_{c}", on_change=clear_label)
             wild = st.selectbox("Wilderness area", [1, 2, 3, 4], key="in_wild",
-                                format_func=lambda i: f"{i} - {WILD_NAMES[i]}")
+                                format_func=lambda i: f"{i} - {WILD_NAMES[i]}", on_change=clear_label)
             soil = st.selectbox("Soil type", list(range(1, 41)), key="in_soil",
-                                format_func=lambda i: f"Soil type {i}")
+                                format_func=lambda i: f"Soil type {i}", on_change=clear_label)
 
         with right:
             x = build_row(vals, wild, soil)

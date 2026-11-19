@@ -143,9 +143,10 @@ with tab_pred:
 
         with right:
             x = build_row(vals, wild, soil)
+            # match the column names the saved model was trained with (e.g. 0..53)
             model_cols = model.get_booster().feature_names
             if model_cols and list(x.columns) != list(model_cols):
-            x.columns = model_cols    
+                x.columns = model_cols
             proba = model.predict_proba(x)[0]
             pred = int(np.argmax(proba)) + 1
             st.subheader("Prediction")
@@ -190,6 +191,7 @@ with tab_perf:
         with cc2:
             st.subheader("Top 10 feature importances")
             fi = pd.Series(m["feature_importance"]).sort_values(ascending=False).head(10)
+            fi.index = [FEATURES[int(i)] if str(i).isdigit() else i for i in fi.index]
             st.bar_chart(fi)
 
 # ---------- 5) Clustering ----------
